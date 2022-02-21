@@ -1,1 +1,0 @@
-C:\py_virtual_envs\django_tutorial\Scripts\activate.bat
