@@ -1,0 +1,133 @@
+Все действие нужно выполнять в соотвтетствующем venv
+
+Создать проект:
+	В cmd перейти в папку, в которой хотим, чтобы лежал наш проект (Здесь это django_tutor)
+	исполняем кооманду django-admin startproject mysite, которая создаст проект с файловой структурой, в данном примере проект называется mysite
+	В результате в django_tutor появится папка с нашим проектом, переименовывать эту папку можно, но всё что создалось внутри НЕЛЬЗЯ
+	перейдем в папку с проектом.
+	для запуска сервера: py manage.py runserver 
+
+Создание приложения:
+	py manage.py startapp polls - создаст проект polls и его файловую структуру
+	
+Projects vs. apps
+
+What’s the difference between a project and an app?
+An app is a web application that does something – e.g., a blog system, a database of public records or a small poll app.
+A project is a collection of configuration and apps for a particular website.
+A project can contain multiple apps. An app can be in multiple projects.
+
+Первые VIEW
+предназначены для реагирование на запрос к серверу через определенный url
+
+пишутся в файле views.py в папке приложения
+являются функциями с обязательным первым аргумент типа HttpRequest
+обязательно возвращают HttpResponse или исключение
+
+связь между url и view настраивается с помощью URLconf;
+URLconf задается в файле urls.py.
+представляет собой список ассоциаций паттернов url с view:
+urlpatterns = [
+    path('', views.index, name='index'),
+]
+Корень откуда начинается поииск соответствий находится в файле urls.py, проекта.
+для передачи обработки url от корня к URLconf приложения надо в корневом URLconf добавить
+path('polls/', include('polls.urls')), где 'polls/' часть соответствия url, может быть любым, polls.urls - URLconf приложения polls
+В polls.urls передается часть url без 'polls/'.
+Когда Django находит соответствие по шаблону url он вызывает соответствующий view и передает ему в качестве аргумента объект типа HttpRequest
+и может ещё кое-что см ниже
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+Настроили поддержку БД
+Создать БД для проекта
+	python manage.py migrate
+Создали модельки
+Активировали моделки
+	Надо включить приложение в проект(Суть в том, что проект иожно использовать в разных проектах и -> он независим от них и они от него)
+		To include the app in our project, we need to add a reference to its configuration class in the INSTALLED_APPS setting.
+		The PollsConfig class is in the polls/apps.py file, so its dotted path is 'polls.apps.PollsConfig'.
+		Edit the mysite/settings.py file and add that dotted path to the INSTALLED_APPS setting.
+
+Создать табоицы нашего приложения в БД
+Сейчас мы выполнили пункт 1 в следующем списке
+three-step guide to making model changes
+	Change your models (in models.py).
+	Run: python manage.py makemigrations ; to create migrations for those changes
+	Run: python manage.py migrate ; to apply those changes to the database.
+	
+Migrations - что вроде систеса контроля версий для БД.
+Сделали какие-то изменения в модели (создали новые, изменили или удалили старые).
+коммандой makemigrations создали коммит (появится новый файл в polls/migrations/)
+перед пушем, можно посмотреть какой SQL код выполнится: py manage.py sqlmigrate polls 0001
+	код для проекта polls коммит номер 0001
+коммандой migrate запушали, в результате выполнится какой-то код, который изменит нашу ДБ (создаст таблицы, добавит поля и т.д.)
+
+Creating an admin user
+
+First we’ll need to create a user who can login to the admin site. Run the following command:
+	py manage.py createsuperuser
+	
+Добавить модельки, которые хотим администрировать. Для того чтобы они были видны в на админском сайте нашего проекта
+	в файле admin.py нашего ПРИЛОЖЕНИЯ зарегистрировать модельки для админестрирования
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+Шаблоны
+по умолчанию с шаблонами работает DjangoTemplates
+настройка для шаблонов в переменой TEMPLATES
+флаг APP_DIRS - Whether the engine should look for template source files inside installed applications.
+By convention DjangoTemplates looks for a “templates” subdirectory in each of the INSTALLED_APPS.
+Рекомедуется создавать в папке templates папку с именем приложение,
+т.е. у нас есть приложение app_name, которое лежит в папке app_name;
+там создали папку templates, т.к. в этой папке DjangoTemplates ищет шаблоны;
+и уже в папке templates, снова создать папку app_name;
+Это делается из-за особености работы DjangoTemplates,
+допустим нам нужен шаблон для приложения app_name с именем index.html;
+DjangoTemplates бежит по всем NSTALLED_APPS и ищет index.html и возьмет первый попавшийсе и не факт,что это тот, что нужен.
+Поэтому нам надо положить его в папку app_name и запрашивать у loader'a app_name/index.html. Тогда при поиске он будет искать
+в папках templates каждого приложения из INSTALLED_APPS подпапку app_name с index.html.
+
+Написание VIEW
+Всё что Django хочет от вьюшки это получить объект HttpResponse или исключение.
+А так мы можем делать все что захотим, главное удволетворить потребность выше.
+
+Для отправки template в качестве ответа, надо его загрузить через loader (from django.template import loader)
+указав на шаблон(html докумет)
+Создать context - словарь {'':}.
+Вернуть объект HttpResponse: HttpResponse(template.render(context, request))
+Т.к. это обычное дело, то есть shortcuts: from django.shortcuts import render
+И процесс создания объекта HttpResponse и загрузки нужного шаблона можно сократить до:
+render(request, 'polls/index.html', context), 'polls/index.html' - имя шаблона, который хотим использовать
+
+Т.к. от view ожидается HttpResponse или исключение, что бы не писать конструкцию с try except
+есть shortcuts: get_object_or_404 для получение представителя модели. (<-> Model.objects.get)
+для плучения списка представителей есть get_list_or_404(). (<-> Model.objects.filter)
+
+У Django есть система шаблонов. Т.е. предоставляет некоторый функционал, который может выполняться в html, когда мы будем его рендерить.
+в html:
+	{{var}} - имя переменой. при render туда подставится значение из context = {'var': var_value}
+есть tags - предоставляют некоторую логику, например цикл for или условный оператор:
+{% for %}
+{% endfor %}
+{% if %}
+{% else %}
+{% endif %} и д.р.
+
+Может быть ситуация, когда в шаблоне захардкожен url, url_1. Но если мы поменяем в URLconf url_1 на url_2 и
+view которая раньше реагировала на url_1 будет теперь отзываться на url_2, то url_1 останится без view, а он захардкожен в шаблоне
+следовательно, клик по нему приведет к нежелательному поведению.
+Для разрешения этой проблемы можно использовать tag {% url %}:
+пусть есть URLconf: path('polls/<int:question_id>/', views.detail, name='detail'),
+в шаблон захардкожен url: <a href="/polls/{{ question.id }}/">
+Предположим мы изменили url в URLconf: path('polls/specifics/<int:question_id>/', views.detail, name='detail'),
+в шаблоне url уже не действителен.
+решается эта проблема указанием не url, а указанением в шаблоне переменной name, которую мы установили в path, у нас это name='detail'
+тогда в шаблоне пишем: <a href="{% url 'detail' question.id %}">
+теперь в URLconf можем менять url как угодно
+
+Мы решили проблему возникающую при захардкоженом url
+Но появилась другая: предположим у нас есть несколько приложений где name='detail', тогда
+как узнать для какого из приложений создавать url в {% url 'detail' question.id %}
+проблема решается указанием пространства имен приложения.
+Для создания пространства имен url'ов приложения идем в urls.py приложения и в самом верху
+создаем переменную app_name и указываем имя пространства имен:
+app_name = 'polls'
+а в шаблоне тогда меняем на:
+{% url 'polls:detail' question.id %}
