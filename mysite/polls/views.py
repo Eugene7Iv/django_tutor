@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.db.models import F
 from django.views import generic
 
-from .models import Question
+from .models import Question, Choice
 # Create your views here.
 
 
