@@ -137,3 +137,8 @@ forloop.counter indicates how many times the for tag has gone through its loop
 # Always return an HttpResponseRedirect after successfully dealing
 # with POST data. This prevents data from being posted twice if a
 # user hits the Back button.
+
+Если тянуть данные из БД обновлять их и затем записывать в БД. Можно получить состояние гонки
+Для решения этой проблемы есть F: from django.db.models import F
+question.choice_set.filter(pk=_pk).update(votes=F('votes') + 1) - Сгунерирует sql код, который исполнится в БД.
+Никакие данные в питоне даже непоявятся
