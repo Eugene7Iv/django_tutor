@@ -142,3 +142,7 @@ forloop.counter indicates how many times the for tag has gone through its loop
 Для решения этой проблемы есть F: from django.db.models import F
 question.choice_set.filter(pk=_pk).update(votes=F('votes') + 1) - Сгунерирует sql код, который исполнится в БД.
 Никакие данные в питоне даже непоявятся
+
+Для большинства view процедура: получить данные из ДБ на основе данных, которые были переданы через url,
+загрузить шаблон и вернуть отредеренный шаблон, явдяется стандартным делом. Поэтому в джанго есть generic views.
+В частности ListView and DetailView один для демонстрации некторого списка, второй для просмотра информации об элементе какой-то модели
