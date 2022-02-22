@@ -131,3 +131,9 @@ view которая раньше реагировала на url_1 будет т
 app_name = 'polls'
 а в шаблоне тогда меняем на:
 {% url 'polls:detail' question.id %}
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+forloop.counter indicates how many times the for tag has gone through its loop
+
+# Always return an HttpResponseRedirect after successfully dealing
+# with POST data. This prevents data from being posted twice if a
+# user hits the Back button.
